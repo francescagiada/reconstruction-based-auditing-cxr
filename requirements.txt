@@ -1,0 +1,26 @@
+# Python dependencies for code_deposit/ (Zenodo/GitHub deposit, Major Comment 3).
+#
+# Exact package versions used to produce the paper's original results were not
+# recorded at the time (training ran on an external HPC environment whose
+# environment file was not preserved). The versions below are known-compatible
+# minimums for the APIs actually used across the five folders (checked against
+# each file's imports), not a frozen historical snapshot. If exact
+# reproducibility down to numerical noise matters, re-pin after a first
+# successful run in a fresh environment.
+#
+# Tested with Python 3.10+.
+
+numpy>=1.24
+pandas>=2.0
+scipy>=1.10
+matplotlib>=3.7
+seaborn>=0.12
+scikit-learn>=1.2
+scikit-image>=0.20
+Pillow>=9.4
+tqdm>=4.65
+
+torch>=2.0
+torchvision>=0.15
+torchxrayvision>=1.2
+grad-cam>=1.4          # imported as pytorch_grad_cam (01_classifier_training only)
