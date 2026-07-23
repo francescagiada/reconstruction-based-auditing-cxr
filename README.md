@@ -80,12 +80,11 @@ successful run in a fresh environment.
 
 ## Citation
 
-If you use this code, please cite the paper above. A DOI/citation record will be added here
-once the deposit is minted on Zenodo.
+If you use this code, please cite the paper above.
 
 ## License
 
-To be added at deposit time.
+This code is released under the [MIT License](LICENSE).
 
 ## Contact
 
