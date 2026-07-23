@@ -50,7 +50,7 @@ and [Med-PaLM 2 labeler](https://physionet.org/content/medpalm-cxr-labels/) labe
 distributed via PhysioNet under a Data Use Agreement (DUA). **No patient data is included in
 this repository.** Access to MIMIC-CXR requires completing PhysioNet's credentialing process
 and DUA; once obtained, the scripts here expect the CSV/image layout described in each stage's
-folder (see the placeholder paths in each script — replace with your local data location).
+folder (see the placeholder paths in each script and replace with your local data location).
 
 ## Environment
 
@@ -59,8 +59,8 @@ pip install -r requirements.txt
 ```
 
 Tested with Python 3.10+. `requirements.txt` documents known-compatible minimum versions for
-the packages actually imported across all five stages — the exact environment used for the
-original training run was not preserved (external HPC environment), so this is not a frozen
+the packages actually imported across all five stages (the exact environment used for the
+original training run was not preserved, external HPC environment), so this is not a frozen
 historical pin. If exact reproducibility down to numerical noise matters, re-pin after a first
 successful run in a fresh environment.
 
