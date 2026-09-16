@@ -1,9 +1,9 @@
-"""ae_eval_script.py
+"""compute_reconstruction_metrics.py
 
 Evaluate a pretrained autoencoder on a list of images and compute per-image metrics.
 
 Usage (PowerShell):
-python ae_eval_script.py --checkpoint path/to/model.pth --csv images.csv --output results.csv --base-dir "C:/path/to/images"
+python compute_reconstruction_metrics.py --checkpoint path/to/model.pth --csv images.csv --output results.csv --base-dir "C:/path/to/images"
 
 The script implements these modular functions:
   - load_model()
@@ -143,7 +143,7 @@ def preprocess_image(image_path: str, base_dir: str = None, img_size: int = 224)
         transforms.ToTensor(),
         transforms.Normalize([0.5], [0.5])
     ])
-    t = tf(img).unsqueeze(0)  # (1,1,H,W)
+    t = tf(img).unsqueeze(0)
     return t
 
 
@@ -229,14 +229,12 @@ def estimate_epsilon(autoencoder: nn.Module, dataloader: DataLoader, percentile:
             x = x.to(device)
             out = autoencoder(x)
             xhat = out[0] if isinstance(out, tuple) else out
-            # convert to numpy normalized arrays
             x_np = x.detach().cpu().numpy()
             xhat_np = xhat.detach().cpu().numpy()
             B = x_np.shape[0]
             for i in range(B):
                 a = tensor_to_numpy_normalized(torch.from_numpy(x_np[i:i+1]))
                 b = tensor_to_numpy_normalized(torch.from_numpy(xhat_np[i:i+1]))
-                # ensure 2D
                 if a.ndim == 3:
                     a = a.squeeze()
                 if b.ndim == 3:
@@ -256,8 +254,7 @@ def estimate_epsilon(autoencoder: nn.Module, dataloader: DataLoader, percentile:
 
 
 def compute_edge_difference_normalized(a: np.ndarray, b: np.ndarray) -> float:
-    # a,b are single-channel 2D arrays in [-1,1]
-    # compute gradient magnitude using Sobel
+    # a, b are single-channel 2D arrays in [-1, 1]
     ax = ndi.sobel(a, axis=0)
     ay = ndi.sobel(a, axis=1)
     bx = ndi.sobel(b, axis=0)
@@ -289,19 +286,15 @@ def main():
     device = get_device()
     print('Using device:', device)
 
-    # load model
     print('Loading model...')
     model = load_model(args.checkpoint, model_type=args.model_type, device=device)
 
-    # read csv
     df = pd.read_csv(args.csv)
     if args.img_col not in df.columns:
         raise ValueError(f"CSV does not contain column '{args.img_col}'")
 
-    # optionally estimate epsilon using a calibration loader
     epsilon_used = args.epsilon
     if args.estimate_epsilon:
-        # build calibration list of image paths
         if args.calibration_csv:
             calib_df = pd.read_csv(args.calibration_csv)
             if args.img_col not in calib_df.columns:
@@ -336,7 +329,6 @@ def main():
         a = tensor_to_numpy_normalized(inp_t)
         b = tensor_to_numpy_normalized(recon_t)
 
-        # ensure 2D arrays
         if a.ndim == 3:
             a = a.squeeze()
         if b.ndim == 3:

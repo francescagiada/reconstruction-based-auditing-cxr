@@ -12,7 +12,7 @@ likely classifier errors (both false negatives and false positives) for prioriti
 
 ## Overview
 
-The pipeline has five stages, one folder each, run in order:
+The pipeline has six stages, one folder each, run in order:
 
 ```
 01_classifier_training/    Fine-tunes a TorchXRayVision DenseNet-121 classifier,
@@ -32,15 +32,21 @@ The pipeline has five stages, one folder each, run in order:
                             tails and reports the classifier's TN/TP/FP/FN composition
                             per tail, per pathology, per architecture, per metric.
 
-05_figures_cost_benefit/   Turns the per-case CSVs into the paper's cost-benefit and
-                            enrichment figures (false-negative capture rate vs.
+05_figures_cost_benefit/   Turns the per-case CSVs into cost-benefit and enrichment
+                            figures (false-negative capture rate vs.
                             percentage of cases flagged for review) and the baseline
                             classification performance summary (accuracy, sensitivity,
                             specificity, AUC per pathology/architecture).
+
+06_robustness_and_sensitivity_analyses/
+                            Statistical robustness checks on the stage 03-05 results.
+                            13 scripts, numbered in run order; see each script's own
+                            docstring for what it does and what it depends on.
 ```
 
-Stages 01-02 require GPU training; 03-05 are analysis/plotting and run on CPU given the
-per-case CSV outputs of stage 01-02.
+Stages 01-02 require GPU training. Stage 03 runs inference with a trained autoencoder
+(GPU recommended, CPU also supported) to compute per-case reconstruction metrics from
+images. Stages 04-06 are CPU-only statistical analysis on the resulting per-case CSVs.
 
 ## Data
 
@@ -50,7 +56,7 @@ and [Med-PaLM 2 labeler](https://physionet.org/content/medpalm-cxr-labels/) labe
 distributed via PhysioNet under a Data Use Agreement (DUA). **No patient data is included in
 this repository.** Access to MIMIC-CXR requires completing PhysioNet's credentialing process
 and DUA; once obtained, the scripts here expect the CSV/image layout described in each stage's
-folder (see the placeholder paths in each script and replace with your local data location).
+folder (see the placeholder paths in each script, replace with your local data location).
 
 ## Environment
 
@@ -58,25 +64,22 @@ folder (see the placeholder paths in each script and replace with your local dat
 pip install -r requirements.txt
 ```
 
-Tested with Python 3.10+. `requirements.txt` documents known-compatible minimum versions for
-the packages actually imported across all five stages (the exact environment used for the
-original training run was not preserved, external HPC environment), so this is not a frozen
-historical pin. If exact reproducibility down to numerical noise matters, re-pin after a first
-successful run in a fresh environment.
+Tested with Python 3.10+. `requirements.txt` lists known-compatible minimum versions, not the
+exact environment used for the original training run (run on an external server and not
+preserved).
+
+Even with a fixed seed and matching package versions, exact numerical reproducibility can
+still be affected by standard sources of GPU non-determinism (cuDNN algorithm selection,
+floating-point operation ordering).
 
 ## Reproducibility
 
-- Stage 01 and 02 (model training) seed `random`, `numpy`, and `torch` from a single
-  `GLOBAL_SEED = 42` constant at the top of each script/notebook.
-- Stage 04's tail-direction convention (which tail of each metric's distribution is
-  "higher-risk") follows the same `METRIC_DIRECTION` mapping used throughout the paper's
-  statistical analysis: MSE and NED are error measures (higher = worse), SSIM and PPW are
-  similarity measures (lower = worse). This is made explicit in stage 04's output via the
-  `is_worst_reconstruction_tail` column, and in stage 05 via the `tradeoff_df` construction.
-- Stage 05 ships as a single script, `cost_benefit_figures.py`, distilled from the
-  original exploratory notebook down to the code path that actually produces the
-  published figures and tables (the earlier notebook, with intermediate exploratory
-  variants, is kept only in the authors' private working copy, not in this deposit).
+- Stages 01-02 seed `random`, `numpy`, and `torch` from `GLOBAL_SEED = 42`.
+- Stage 05 is a single script distilled from the original exploratory notebook down
+  to the code path that produces the output figures; intermediate exploratory
+  variants are not included in this deposit.
+- Stage 06's bootstrap/permutation procedures use a fixed seed (42) and patient-level,
+  not row-level, resampling.
 
 ## Citation
 
@@ -85,7 +88,3 @@ If you use this code, please cite the paper above.
 ## License
 
 This code is released under the [MIT License](LICENSE).
-
-## Contact
-
-Francesca Giada Antonaci — fga@mit.edu

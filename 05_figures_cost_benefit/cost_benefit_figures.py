@@ -4,7 +4,7 @@ Pipeline: for each (pathology, autoencoder, metric) combination, cases are ranke
 reconstruction score and split into a direction-corrected tail (see METRIC_DIRECTION
 below) at the 1% and 5% percentile thresholds. Confusion-matrix counts within each tail
 are aggregated into false-negative/false-positive capture rates, which drive the two
-published figures (cost-benefit curves, FN enrichment) and the baseline classification
+output figures (cost-benefit curves, FN enrichment) and the baseline classification
 performance summary.
 
 Input: per-pathology, per-autoencoder CSVs in BASE_DIR, one row per case, with columns

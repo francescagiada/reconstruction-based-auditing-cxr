@@ -1,9 +1,9 @@
-# Python dependencies for code_deposit/ (Zenodo/GitHub deposit, Major Comment 3).
+# Python dependencies for code_deposit/.
 #
 # Exact package versions used to produce the paper's original results were not
 # recorded at the time (training ran on an external HPC environment whose
 # environment file was not preserved). The versions below are known-compatible
-# minimums for the APIs actually used across the five folders (checked against
+# minimums for the APIs actually used across the six folders (checked against
 # each file's imports), not a frozen historical snapshot. If exact
 # reproducibility down to numerical noise matters, re-pin after a first
 # successful run in a fresh environment.
@@ -19,6 +19,7 @@ scikit-learn>=1.2
 scikit-image>=0.20
 Pillow>=9.4
 tqdm>=4.65
+statsmodels>=0.14   # 06_robustness_and_sensitivity_analyses only
 
 torch>=2.0
 torchvision>=0.15
