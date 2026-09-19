@@ -1,6 +1,6 @@
 """Patient-stratified bootstrap 95% CIs and two-tailed permutation
 significance testing for FN/FP capture under tail-based prioritization,
-Benjamini-Hochberg corrected across all cells.
+Benjamini-Hochberg corrected within each method's own family.
 
 Input: per-pathology, per-autoencoder case CSVs, columns subject_id,
 true_label, pred_label_thr_youden, pred_prob, mse, ssim, ppw,
@@ -191,12 +191,31 @@ def main():
 
     df_out = pd.DataFrame(all_rows)
 
-    # Benjamini-Hochberg correction, applied jointly across the full family of
-    # tests (all cells, both thresholds, all four p-value columns below).
+    # Benjamini-Hochberg correction across the 80 autoencoder cells
+    # (pathology x architecture x threshold x reconstruction metric) forms
+    # the correction family reported as significant/non-significant
+    # throughout the manuscript. The 20 confidence-baseline cells are
+    # reported alongside for completeness but are not part of that
+    # correction family.
+    is_autoencoder = df_out["method"] == "autoencoder"
     for col in ["perm_p_fn_capture", "perm_p_fn_ratio", "perm_p_fp_capture", "perm_p_fn_capture_lower"]:
-        reject, qvals, _, _ = multipletests(df_out[col].to_numpy(), alpha=0.05, method="fdr_bh")
-        df_out[col.replace("perm_p_", "bh_q_")] = qvals
-        df_out[col.replace("perm_p_", "bh_reject_")] = reject
+        q_col = col.replace("perm_p_", "bh_q_")
+        r_col = col.replace("perm_p_", "bh_reject_")
+
+        # Confidence-baseline rows: reported for completeness, using their
+        # natural position within the full 100-cell pool.
+        reject_all, qvals_all, _, _ = multipletests(df_out[col].to_numpy(), alpha=0.05, method="fdr_bh")
+        df_out[q_col] = qvals_all
+        df_out[r_col] = reject_all
+
+        # Autoencoder rows: corrected within their own 80-cell family, the
+        # one reported as significant/non-significant throughout the
+        # manuscript.
+        reject_ae, qvals_ae, _, _ = multipletests(
+            df_out.loc[is_autoencoder, col].to_numpy(), alpha=0.05, method="fdr_bh"
+        )
+        df_out.loc[is_autoencoder, q_col] = qvals_ae
+        df_out.loc[is_autoencoder, r_col] = reject_ae
 
     out_path = os.path.join(OUTPUT_DIR, "permutation_test_results.csv")
     df_out.to_csv(out_path, index=False)
